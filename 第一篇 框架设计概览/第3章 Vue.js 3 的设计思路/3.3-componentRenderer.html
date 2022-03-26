@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+
+<body>
+    <script>
+        const vnode = {
+            tag: 'div',
+            props: {
+                onClick: () => alert('from element')
+            },
+            children: 'click me'
+        }
+        // 函数式组件
+        const myComponent = function () {
+            return {
+                tag: 'div',
+                props: {
+                    onClick: () => alert('from component')
+                },
+                children: 'click me'
+            }
+        }
+        // 对象式组件
+        // const myComponent = {
+        //     render() {
+        //         return {
+        //             tag: 'div',
+        //             props: {
+        //                 onClick: () => alert('from component')
+        //             },
+        //             children: 'click me'
+        //         }
+        //     }
+        // }
+        const cvnode = {
+            tag: myComponent
+        }
+        // 渲染器
+        function renderer(vnode, container) {
+            if (typeof vnode.tag === 'string') {
+                mountElement(vnode, container)
+            } else if (typeof vnode.tag === 'function') {
+                mountComponent(vnode, container)
+            }
+        }
+
+        function mountElement(vnode, container) {
+            const { tag, props, children } = vnode
+            const el = document.createElement(tag)
+            for (const key in props) {
+                if (/^on/.test(key)) {
+                    el.addEventListener(key.substr(2).toLowerCase(), props[key])
+                }
+            }
+            if (typeof children === 'string') {
+                el.appendChild(document.createTextNode(children))
+            } else if (Array.isArray(children)) {
+                children.forEach(child => {
+                    mountElement(child, el)
+                })
+            }
+            container.appendChild(el)
+        }
+
+        function mountComponent(vnode, container) {
+            const subtree = vnode.tag()
+            mountElement(subtree, container)
+        }
+
+        // renderer(vnode, document.body)
+        renderer(cvnode, document.body)
+    </script>
+</body>
+
+</html>
